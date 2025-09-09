@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extraction Tool</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: #4a6fc0;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .upload-section {
+            padding: 30px;
+        }
+        
+        .upload-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .upload-option-btn {
+            background: #f0f5ff;
+            border: 2px solid #4a6fc0;
+            border-radius: 8px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #4a6fc0;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .upload-option-btn:hover {
+            background: #4a6fc0;
+            color: white;
+        }
+        
+        .upload-area {
+            border: 3px dashed #4a6fc0;
+            border-radius: 12px;
+            padding: 40px 20px;
+            margin-bottom: 25px;
+            background-color: #f8fafc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .upload-area:hover {
+            background-color: #e8f4ff;
+            border-color: #3b5998;
+        }
+        
+        .upload-icon {
+            font-size: 60px;
+            color: #4a6fc0;
+            margin-bottom: 15px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .camera-container {
+            display: none;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        #cameraVideo {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 8px;
+            background-color: #000;
+        }
+        
+        .camera-controls {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4a6fc0;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #3b5998;
+        }
+        
+        .btn-success {
+            background-color: #4cc9f0;
+        }
+        
+        .btn-success:hover {
+            background-color: #3a9fc9;
+        }
+        
+        .btn-warning {
+            background-color: #f72585;
+        }
+        
+        .btn-warning:hover {
+            background-color: #c41c68;
+        }
+        
+        .image-preview {
+            margin: 20px auto;
+            display: none;
+            max-width: 100%;
+            text-align: center;
+        }
+        
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
+        }
+        
+        .results-container {
+            display: none;
+            padding: 0 30px 30px;
+        }
+        
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .response-title {
+            font-size: 22px;
+            color: #2c3e50;
+        }
+        
+        .response-time {
+            color: #7f8c8d;
+            font-size: 14px;
+            background: #f7f9fc;
+            padding: 5px 10px;
+            border-radius: 15px;
+        }
+        
+        .json-display {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+        
+        .json-key {
+            color: #8e44ad;
+            font-weight: 600;
+        }
+        
+        .json-string {
+            color: #27ae60;
+        }
+        
+        .json-number {
+            color: #e74c3c;
+        }
+        
+        .json-boolean {
+            color: #f39c12;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+            z-index: 100;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #4a6fc0;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .alert-error {
+            color: #e74c3c;
+            background-color: #fdeded;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-success {
+            color: #27ae60;
+            background-color: #e6f7ee;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .server-info {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 14px;
+            border-top: 1px solid #3a506b;
+        }
+        
+        .quality-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #4a6fc0;
+            background: #f0f5ff;
+            padding: 8px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        
+        .resolution-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #27ae60;
+            background: #e6f7ee;
+            padding: 8px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        
+        .extract-btn-container {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 10px;
+            }
+            
+            header {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .upload-section {
+                padding: 20px;
+            }
+            
+            .upload-area {
+                padding: 25px 15px;
+            }
+            
+            .results-container {
+                padding: 0 20px 20px;
+            }
+            
+            .upload-options {
+                flex-direction: column;
+            }
+            
+            #cameraVideo {
+                max-width: 100%;
+            }
+            
+            .response-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .upload-option-btn {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            
+            .camera-controls {
+                flex-direction: column;
+            }
+            
+            .response-title {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Extraction Tool</h1>
+            <p class="description">Upload or capture an image to extract structured data</p>
+        </header>
+
+        <div class="upload-section">
+            <div class="upload-options">
+                <button class="upload-option-btn" id="galleryBtn">
+                    <span>📁</span> Choose from Gallery
+                </button>
+                <button class="upload-option-btn" id="cameraBtn">
+                    <span>📷</span> Capture with Camera
+                </button>
+            </div>
+
+            <input type="file" id="fileInput" class="file-input" accept="image/*">
+
+            <div class="camera-container" id="cameraContainer">
+                <video id="cameraVideo" autoplay playsinline></video>
+                <div class="camera-controls">
+                    <button class="btn btn-success" id="captureBtn">Capture High Quality Photo</button>
+                    <button class="btn btn-warning" id="cancelCameraBtn">Cancel</button>
+                </div>
+                <p class="quality-info">Using high resolution settings for better text recognition</p>
+                <p class="resolution-info" id="resolutionInfo">Resolution: Unknown</p>
+            </div>
+
+            <div class="image-preview" id="imagePreview">
+                <img src="" alt="Invoice Preview">
+                <div id="noPreviewText">No image selected</div>
+            </div>
+
+            <div class="alert alert-error" id="errorAlert"></div>
+            <div class="alert alert-success" id="successAlert"></div>
+
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <p>Processing your Images... This may take a moment</p>
+            </div>
+
+            <div class="extract-btn-container" id="extractBtnContainer">
+                <button id="extractButton" class="btn btn-success">Extract Invoice Data</button>
+            </div>
+        </div>
+
+        <div class="results-container" id="resultsContainer">
+            <div class="response-header">
+                <h2 class="response-title">Extracted Data</h2>
+                <div class="response-time" id="responseTime"></div>
+            </div>
+
+            <div class="json-display" id="jsonOutput"></div>
+            
+            <div class="action-buttons">
+                <button id="downloadButton" class="btn">Download JSON</button>
+                <button id="newExtractionButton" class="btn btn-warning">New Extraction</button>
+            </div>
+        </div>
+
+        <div class="server-info">
+            <p>Server: <span id="serverAddress">Waiting for connection...</span></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const fileInput = document.getElementById('fileInput');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImg = imagePreview.querySelector('img');
+            const noPreviewText = document.getElementById('noPreviewText');
+            const extractBtnContainer = document.getElementById('extractBtnContainer');
+            const extractButton = document.getElementById('extractButton');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const jsonOutput = document.getElementById('jsonOutput');
+            const downloadButton = document.getElementById('downloadButton');
+            const newExtractionButton = document.getElementById('newExtractionButton');
+            const errorAlert = document.getElementById('errorAlert');
+            const successAlert = document.getElementById('successAlert');
+            const responseTime = document.getElementById('responseTime');
+            const serverAddress = document.getElementById('serverAddress');
+            const galleryBtn = document.getElementById('galleryBtn');
+            const cameraBtn = document.getElementById('cameraBtn');
+            const cameraContainer = document.getElementById('cameraContainer');
+            const cameraVideo = document.getElementById('cameraVideo');
+            const captureBtn = document.getElementById('captureBtn');
+            const cancelCameraBtn = document.getElementById('cancelCameraBtn');
+            const resolutionInfo = document.getElementById('resolutionInfo');
+
+            // API URL configuration - using the /chat endpoint from your Flask app
+            const apiUrl = window.location.origin + "/chat";
+            serverAddress.textContent = window.location.hostname || "local server";
+
+            let currentImageFile = null;
+            let stream = null;
+            let cameraResolution = { width: 0, height: 0 };
+            let extractedData = null;
+
+            // Event listeners
+            galleryBtn.addEventListener('click', () => fileInput.click());
+            cameraBtn.addEventListener('click', startCamera);
+            captureBtn.addEventListener('click', capturePhoto);
+            cancelCameraBtn.addEventListener('click', stopCamera);
+            extractButton.addEventListener('click', extractInvoiceData);
+            newExtractionButton.addEventListener('click', resetUI);
+            downloadButton.addEventListener('click', downloadJSON);
+
+            // File selection
+            fileInput.addEventListener('change', function() {
+                if (fileInput.files.length) {
+                    handleImageSelection(fileInput.files[0]);
+                }
+            });
+
+            // ---- Camera handling ----
+            async function startCamera() {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    showError("Camera not supported in this browser.");
+                    return;
+                }
+
+                try {
+                    // Request the highest possible resolution (4K if available)
+                    const constraints = {
+                        video: {
+                            facingMode: 'environment', // Use the back camera
+                            width: { ideal: 3840, max: 3840 },    // Request 4K
+                            height: { ideal: 2160, max: 2160 },   // Request 4K
+                            frameRate: { ideal: 30 }   // Higher frame rate for clarity
+                        },
+                        audio: false
+                    };
+
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    
+                    // Get the actual resolution being used
+                    const track = stream.getVideoTracks()[0];
+                    const settings = track.getSettings();
+                    cameraResolution.width = settings.width;
+                    cameraResolution.height = settings.height;
+                    
+                    // Update resolution info
+                    resolutionInfo.textContent = `Resolution: ${cameraResolution.width}×${cameraResolution.height}`;
+                    
+                    cameraVideo.srcObject = stream;
+                    cameraContainer.style.display = 'block';
+                } catch (err) {
+                    console.error('Camera error:', err);
+                    
+                    // Fallback to lower resolution if 4K is not supported
+                    try {
+                        const fallbackConstraints = {
+                            video: {
+                                facingMode: 'environment',
+                                width: { ideal: 1920 },
+                                height: { ideal: 1080 }
+                            },
+                            audio: false
+                        };
+                        
+                        stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+                        
+                        // Get the actual resolution being used
+                        const track = stream.getVideoTracks()[0];
+                        const settings = track.getSettings();
+                        cameraResolution.width = settings.width;
+                        cameraResolution.height = settings.height;
+                        
+                        // Update resolution info
+                        resolutionInfo.textContent = `Resolution: ${cameraResolution.width}×${cameraResolution.height}`;
+                        
+                        cameraVideo.srcObject = stream;
+                        cameraContainer.style.display = 'block';
+                    } catch (fallbackError) {
+                        showError('Unable to access camera: ' + fallbackError.message);
+                    }
+                }
+            }
+
+            function stopCamera() {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                }
+                cameraContainer.style.display = 'none';
+            }
+
+            function capturePhoto() {
+                const canvas = document.createElement('canvas');
+                // Use the camera's actual resolution
+                canvas.width = cameraResolution.width;
+                canvas.height = cameraResolution.height;
+                const ctx = canvas.getContext('2d');
+                
+                // Draw the current frame from the video at full resolution
+                ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+                
+                // Apply slight sharpening for better text recognition
+                ctx.filter = 'contrast(1.1) brightness(1.1)';
+                ctx.drawImage(canvas, 0, 0);
+                ctx.filter = 'none';
+                
+                // Create an ultra high-quality JPEG (quality: 0.98)
+                canvas.toBlob(function(blob) {
+                    const file = new File([blob], 'high-quality-invoice.jpg', { 
+                        type: 'image/jpeg',
+                        lastModified: Date.now()
+                    });
+                    
+                    handleImageSelection(file);
+                    stopCamera();
+                }, 'image/jpeg', 0.98);
+            }
+
+            // Handle image selection
+            function handleImageSelection(file) {
+                if (!file || !file.type.match('image.*')) {
+                    showError('Please select a valid image file (JPEG, PNG, etc.)');
+                    return;
+                }
+                
+                currentImageFile = file;
+                
+                // Preview image
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImg.src = e.target.result;
+                    previewImg.classList.remove('hidden');
+                    noPreviewText.style.display = 'none';
+                    imagePreview.style.display = 'block';
+                    
+                    // Show the extract button
+                    extractBtnContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+                
+                // Hide any previous results
+                resultsContainer.style.display = 'none';
+                
+                // Hide any previous alerts
+                hideAlerts();
+            }
+            
+            // Extract invoice data using the API
+            function extractInvoiceData() {
+                if (!currentImageFile) {
+                    showError('Please select an image first');
+                    return;
+                }
+                
+                loadingIndicator.style.display = 'block';
+                extractBtnContainer.style.display = 'none';
+                hideAlerts();
+                
+                const formData = new FormData();
+                formData.append('image', currentImageFile);
+                
+                fetch(apiUrl, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    loadingIndicator.style.display = 'none';
+                    
+                    console.log('API Response:', data);
+                    
+                    if (data.response) {
+                        showSuccess('processed successfully!');
+                        // Store the original data
+                        extractedData = data;
+                        displayResults(data);
+                    } else {
+                        showError(data.error || 'Failed to extract data');
+                        extractBtnContainer.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    loadingIndicator.style.display = 'none';
+                    extractBtnContainer.style.display = 'block';
+                    showError('Error: ' + error.message);
+                    console.error('Error:', error);
+                });
+            }
+            
+            // Display the extracted results
+            function displayResults(data) {
+                responseTime.textContent = `Processed in ${data.time_taken.toFixed(2)} seconds`;
+                
+                try {
+                    // Try to parse the response as JSON if it's a string
+                    let responseData = data.response;
+                    if (typeof responseData === 'string') {
+                        // Try to extract JSON from the response if it's not pure JSON
+                        try {
+                            // Look for JSON pattern in the response
+                            const jsonMatch = responseData.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+                            if (jsonMatch) {
+                                responseData = JSON.parse(jsonMatch[0]);
+                            }
+                        } catch (e) {
+                            // If parsing fails, keep the original response
+                        }
+                    }
+                    
+                    // Format the JSON with proper indentation if it's an object
+                    if (typeof responseData === 'object' && responseData !== null) {
+                        const formattedJson = JSON.stringify(responseData, null, 2);
+                        jsonOutput.innerHTML = syntaxHighlight(formattedJson);
+                    } else {
+                        // If it's not JSON, just display the raw response
+                        jsonOutput.textContent = data.response;
+                    }
+                } catch (e) {
+                    // If all else fails, display the raw response
+                    jsonOutput.textContent = data.response;
+                }
+                
+                resultsContainer.style.display = 'block';
+                
+                // Scroll to results
+                resultsContainer.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // Download JSON function 
+            function downloadJSON() {
+                if (!extractedData) return;
+                
+                const dataStr = JSON.stringify(extractedData, null, 2);
+                const filename = 'invoice_data.json';
+                
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Clean up
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+            }
+            
+            // Syntax highlighting for JSON
+            function syntaxHighlight(json) {
+                // Add syntax highlighting
+                json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                
+                // Use a more precise regex to match numbers while preserving decimals
+                return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+\-]?\d+)?)/g,
+                function (match) {
+                    let cls = 'json-number';
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'json-key';
+                        } else {
+                            cls = 'json-string';
+                        }
+                    } else if (/true|false/.test(match)) {
+                        cls = 'json-boolean';
+                    } else if (/null/.test(match)) {
+                        cls = 'json-null';
+                    }
+                    return '<span class="' + cls + '">' + match + '</span>';
+                });
+            }
+            
+            // Show alert message
+            function showError(message) {
+                errorAlert.textContent = message;
+                errorAlert.style.display = 'block';
+                successAlert.style.display = 'none';
+            }
+            
+            function showSuccess(message) {
+                successAlert.textContent = message;
+                successAlert.style.display = 'block';
+                errorAlert.style.display = 'none';
+            }
+            
+            function hideAlerts() {
+                errorAlert.style.display = 'none';
+                successAlert.style.display = 'none';
+            }
+            
+            // Reset UI to initial state
+            function resetUI() {
+                currentImageFile = null;
+                extractedData = null;
+                previewImg.src = '';
+                previewImg.classList.add('hidden');
+                noPreviewText.style.display = 'block';
+                imagePreview.style.display = 'none';
+                extractBtnContainer.style.display = 'none';
+                resultsContainer.style.display = 'none';
+                fileInput.value = '';
+                hideAlerts();
+            }
+        });
+    </script>
+</body>
+</html>
