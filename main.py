@@ -23,6 +23,9 @@ def chat():
         prompt = request.form.get("prompt")
         image = request.files.get("image")
 
+        print("----------",prompt)
+        print("----------",image)
+
         if not prompt or not image:
             return jsonify({"error": "prompt and image are required"}), 400
 
@@ -31,6 +34,10 @@ def chat():
             file_path = os.path.join(UPLOAD_FOLDER, f)
             if os.path.isfile(file_path):
                 os.remove(file_path)
+
+
+        print("Old images deleted.")
+
 
         # Save new image
         image_path = os.path.join(UPLOAD_FOLDER, image.filename)
@@ -48,12 +55,16 @@ def chat():
             ],
             stream=True
         )
+        print("Ollama response received.", resp)
+
 
         full_response = ""
         for chunk in resp:
             if "message" in chunk:
                 text = chunk["message"]["content"]
                 full_response += text
+
+        print("Full response:", full_response)
 
         return jsonify({
             "response": full_response,
